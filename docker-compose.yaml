@@ -1,54 +1,67 @@
-version: "3.0" 
+version: "2.0"
 services:
-  node_exporter: 
-    image: prom/node-exporter 
-    container_name: node-exporter 
-    ports: 
-      - 9100:9100 
-    volumes: 
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    pid: host
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - 9100:9100
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-    restart: always 
- 
-  prometheus:
-    image: prom/prometheus:latest 
-    container_name: prometheus 
-    ports:
-      - 9090:9090 
-    volumes: 
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
-    restart: always 
- 
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
-    ports:
-    - 8050:8080
+      - "--path.rootfs=/host"
     volumes:
-    - /:/rootfs:ro
-    - /var/run:/var/run:rw
-    - /sys:/sys:ro
-    - /var/lib/docker/:/var/lib/docker:ro
-    depends_on:
-    - redis
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-    - 6379:6379
-
-  grafana: 
-    image: grafana/grafana:latest 
-    container_name: grafana 
-    ports: 
-      - 3000:3000 
-    volumes: 
-      - "./grafana-data:/var/lib/grafana"
+      - "/:/host:ro,rslave"
+    pid: host
     restart: always
+
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    restart: always
+    
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana 
+    restart: always
+
+  
+  cAdvisor:
+    image: google/cadvisor:latest
+    container_name: cAdvisor
+    ports:
+      - '8050:8080'
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  sonarr-exporter:
+    image: ghcr.io/onedr0p/exportarr:latest
+    container_name: sonarr-exporter
+    command: ["sonarr"]
+    environment:
+      PORT: 9707
+      URL: "http://192.168.200.105:8989"
+      APIKEY: <api1>
+      ENABLE_EPISODE_QUALITY_METRICS: "false"
+    ports:
+      - "9707:9707"
+   
+  radarr-exporter:
+    image: ghcr.io/onedr0p/exportarr:latest
+    container_name: radarr-exporter
+    command: ["radarr"]
+    environment:
+      PORT: 9708
+      URL: "http://192.168.200.105:7878"
+      APIKEY: <api2>
+    ports:
+      - "9708:9708"
