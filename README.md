@@ -1,5 +1,7 @@
 # prometheus-grafana
 
-This is the docker-compose.yaml for the prometheus server and host/container monitoring stack on my Linux server virtual machine.
+This is the docker-compose.yaml for the prometheus server and host/container monitoring stack.
 
-This doesn't include additional Prometheus listeners I've setup for other servers and applications yet, however.
+Ideas for additional challenges:
+-setup automatic provisioning for grafana so there's no need to setup datasources or dashboards
+-setup database on backend
